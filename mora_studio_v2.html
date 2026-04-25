@@ -1,0 +1,919 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Inter:wght@300;400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1a1a17;--surface:#222220;--surface2:#2a2a27;--surface3:#313130;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+  --gold:#c9a96e;--gold2:#e8c87a;--text:#f0ede6;
+  --muted:rgba(240,237,230,0.5);--muted2:rgba(240,237,230,0.28);
+  --danger:#e05252;--success:#5ea86e;--warn:#d4854a;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:300;min-height:100vh;overflow-x:hidden;font-size:14px;}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:52px;background:var(--surface);border-bottom:0.5px solid var(--border);position:sticky;top:0;z-index:100;}
+.logo{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;letter-spacing:0.1em;color:var(--gold);}
+.logo-sub{color:var(--muted);font-size:11px;font-family:'Inter',sans-serif;display:block;letter-spacing:0.06em;font-weight:300;line-height:1;}
+
+/* BOTTOM NAV (mobile-first) */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:60px;background:var(--surface);border-top:0.5px solid var(--border);display:flex;z-index:100;}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:var(--muted);transition:color 0.2s;border:none;background:none;font-family:'Inter',sans-serif;}
+.bnav-item.active{color:var(--gold);}
+.bnav-icon{font-size:18px;line-height:1;}
+.bnav-label{font-size:9px;letter-spacing:0.06em;text-transform:uppercase;font-weight:400;}
+.bnav-item.active .bnav-icon{transform:translateY(-1px);}
+
+/* PAGES */
+.page{display:none;padding:16px 16px 76px;min-height:100vh;}
+.page.active{display:block;}
+
+/* TYPOGRAPHY */
+.page-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;letter-spacing:0.04em;color:var(--text);margin-bottom:2px;}
+.page-sub{font-size:11px;color:var(--muted);letter-spacing:0.04em;}
+.page-header{margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between;}
+.section-title{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:0.5px solid var(--border);font-weight:400;}
+.gold-label{font-size:10px;letter-spacing:0.1em;color:var(--gold);text-transform:uppercase;font-weight:400;}
+
+/* CARDS */
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:16px;}
+.card-sm{background:var(--surface2);border:0.5px solid var(--border);border-radius:10px;padding:14px;}
+.stat-val{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--text);line-height:1;}
+.stat-lbl{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:0.04em;}
+
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:8px;font-size:12px;font-family:'Inter',sans-serif;font-weight:400;letter-spacing:0.05em;cursor:pointer;transition:all 0.15s;border:0.5px solid var(--border2);background:var(--surface3);color:var(--text);}
+.btn:hover{border-color:var(--gold);color:var(--gold);}
+.btn-gold{background:var(--gold);color:#1a1a17;border-color:var(--gold);font-weight:500;}
+.btn-gold:hover{background:var(--gold2);border-color:var(--gold2);color:#1a1a17;}
+.btn-sm{padding:5px 10px;font-size:11px;}
+.btn-danger{border-color:rgba(224,82,82,0.4);color:var(--danger);}
+.btn-danger:hover{background:rgba(224,82,82,0.1);}
+.btn-success{border-color:rgba(94,168,110,0.4);color:var(--success);}
+.btn-success:hover{background:rgba(94,168,110,0.1);}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:400;letter-spacing:0.03em;}
+.badge-paid{background:rgba(94,168,110,0.12);color:var(--success);border:0.5px solid rgba(94,168,110,0.25);}
+.badge-pending{background:rgba(212,133,74,0.12);color:var(--warn);border:0.5px solid rgba(212,133,74,0.25);}
+.badge-overdue{background:rgba(224,82,82,0.12);color:var(--danger);border:0.5px solid rgba(224,82,82,0.25);}
+.dot{width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block;flex-shrink:0;}
+
+/* PROGRESS */
+.prog-bar{height:2px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:8px;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;transition:width 0.5s ease;}
+
+/* AVATAR */
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--surface3);border:0.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--gold);flex-shrink:0;letter-spacing:0.04em;}
+
+/* CLIENT ROW */
+.client-row{display:flex;align-items:center;padding:12px 10px;border-radius:8px;gap:10px;cursor:pointer;transition:background 0.15s;}
+.client-row:hover{background:var(--surface3);}
+.client-name{font-size:13px;font-weight:400;line-height:1.2;}
+.client-project{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* INVOICE ROW */
+.invoice-row{display:flex;align-items:center;padding:12px 10px;border-radius:8px;gap:10px;border-bottom:0.5px solid var(--border);transition:background 0.15s;}
+.invoice-row:last-child{border-bottom:none;}
+.invoice-row:hover{background:var(--surface3);}
+.inv-id{font-size:10px;color:var(--muted);letter-spacing:0.06em;min-width:52px;}
+.inv-amt{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:400;color:var(--gold);white-space:nowrap;}
+
+/* INPUT */
+.inp{background:var(--surface2);border:0.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Inter',sans-serif;font-weight:300;width:100%;outline:none;transition:border-color 0.15s;}
+.inp:focus{border-color:var(--gold);}
+.inp::placeholder{color:var(--muted2);}
+textarea.inp{resize:vertical;min-height:70px;}
+select.inp{cursor:pointer;}
+.inp-label{font-size:11px;color:var(--muted);margin-bottom:5px;letter-spacing:0.04em;}
+.form-group{margin-bottom:12px;}
+
+/* STAGES */
+.stage-row{display:flex;align-items:center;overflow-x:auto;padding-bottom:4px;gap:0;}
+.stage-item{display:flex;flex-direction:column;align-items:center;flex:1;min-width:56px;position:relative;}
+.stage-item:not(:last-child)::after{content:'';position:absolute;top:13px;left:50%;width:100%;height:1px;background:var(--border2);z-index:0;}
+.stage-item.done:not(:last-child)::after{background:var(--gold);}
+.stage-circle{width:26px;height:26px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;z-index:1;background:var(--surface2);color:var(--muted);margin-bottom:5px;}
+.stage-item.done .stage-circle{background:var(--gold);color:#1a1a17;border-color:var(--gold);font-weight:500;}
+.stage-item.current .stage-circle{border-color:var(--gold);color:var(--gold);box-shadow:0 0 0 3px rgba(201,169,110,0.12);}
+.stage-lbl{font-size:9px;color:var(--muted);text-align:center;letter-spacing:0.03em;}
+.stage-item.done .stage-lbl,.stage-item.current .stage-lbl{color:var(--gold);}
+
+/* TOGGLE */
+.toggle-bar{display:flex;gap:2px;background:var(--surface2);border-radius:8px;padding:3px;width:fit-content;}
+.toggle-btn{padding:5px 14px;border-radius:6px;font-size:11px;letter-spacing:0.06em;cursor:pointer;color:var(--muted);background:none;border:none;transition:all 0.2s;font-family:'Inter',sans-serif;text-transform:uppercase;}
+.toggle-btn.active{background:var(--surface3);color:var(--gold);}
+
+/* SHOWCASE */
+.showcase-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.sc-card{background:var(--surface2);border:0.5px solid var(--border);border-radius:10px;overflow:hidden;transition:all 0.2s;cursor:pointer;}
+.sc-card:hover{border-color:var(--gold);transform:translateY(-2px);}
+.sc-img-box{width:100%;aspect-ratio:4/3;background:var(--surface3);position:relative;overflow:hidden;border-bottom:0.5px solid var(--border);}
+.sc-img-box img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s;}
+.sc-card:hover .sc-img-box img{transform:scale(1.05);}
+.sc-info{padding:10px 12px;}
+.sc-title{font-size:12px;font-weight:400;color:var(--text);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sc-client{font-size:10px;color:var(--muted);letter-spacing:0.04em;}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:12px;background:var(--surface2);border-radius:12px;border:0.5px solid var(--border);}
+
+/* IDEA */
+.idea-card{background:var(--surface2);border:0.5px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all 0.15s;margin-bottom:10px;}
+.idea-card:hover{border-color:var(--gold);transform:translateY(-1px);}
+.idea-hook{font-size:13px;font-weight:400;line-height:1.5;margin-bottom:8px;}
+.tag-row{display:flex;gap:5px;flex-wrap:wrap;}
+.tag{display:inline-block;padding:2px 7px;border-radius:99px;font-size:10px;letter-spacing:0.03em;}
+.tag-dark{background:var(--surface3);color:var(--muted);border:0.5px solid var(--border);}
+.tag-gold{background:rgba(201,169,110,0.12);color:var(--gold);border:0.5px solid rgba(201,169,110,0.2);}
+.tag-blue{background:rgba(56,132,220,0.1);color:#6aa8e8;border:0.5px solid rgba(56,132,220,0.2);}
+.tag-pink{background:rgba(200,100,140,0.1);color:#d47aaa;border:0.5px solid rgba(200,100,140,0.2);}
+.idea-meta{font-size:10px;color:var(--muted2);margin-top:6px;}
+.random-box{background:var(--surface2);border:0.5px solid rgba(201,169,110,0.3);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:16px;}
+.random-box:hover{border-color:var(--gold);}
+.random-hook{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;font-style:italic;color:var(--text);line-height:1.4;margin-bottom:8px;}
+.random-tag{font-size:10px;color:var(--muted);letter-spacing:0.05em;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:0.5px solid var(--border2);border-radius:16px 16px 0 0;padding:24px 20px 32px;width:100%;max-width:540px;max-height:85vh;overflow-y:auto;position:relative;}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;margin-bottom:16px;letter-spacing:0.04em;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;}
+.close-btn{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px;line-height:1;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;}
+.close-btn:hover{background:var(--surface3);color:var(--text);}
+
+/* FEEDBACK */
+.feedback-item{background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:8px;border-left:2px solid var(--gold);}
+.feedback-text{font-size:12px;line-height:1.5;}
+.feedback-meta{font-size:10px;color:var(--muted2);margin-top:5px;}
+
+/* NOTIF */
+.notif{position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--surface3);border:0.5px solid var(--gold);border-radius:99px;padding:8px 20px;font-size:12px;color:var(--gold);z-index:300;opacity:0;transition:all 0.3s;letter-spacing:0.04em;pointer-events:none;white-space:nowrap;}
+.notif.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* DIVIDER */
+.divider{height:0.5px;background:var(--border);margin:14px 0;}
+.mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}.mb-16{margin-bottom:16px}.mb-20{margin-bottom:20px}
+.mt-8{margin-top:8px}.mt-12{margin-top:12px}
+.flex{display:flex}.items-center{align-items:center}.justify-between{justify-content:space-between}
+.gap-8{gap:8px}.gap-10{gap:10px}.w-full{width:100%}
+
+/* PDF STYLES (injected into hidden iframe) */
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">mora studio<span class="logo-sub">creative hub</span></div>
+  <div style="font-size:10px;color:var(--muted);letter-spacing:0.05em;">v2.0</div>
+</div>
+
+<!-- PAGE: DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="page-header">
+    <div><div class="page-title">Overview</div><div class="page-sub" id="dash-month">This Month</div></div>
+  </div>
+  <div class="grid-3 mb-16">
+    <div class="card-sm"><div class="stat-val" id="dash-rev">₹0</div><div class="stat-lbl">Revenue</div></div>
+    <div class="card-sm"><div class="stat-val" id="dash-active">0</div><div class="stat-lbl">Active Projects</div></div>
+    <div class="card-sm"><div class="stat-val" id="dash-delivered">0</div><div class="stat-lbl">Delivered</div></div>
+  </div>
+  <div class="card"><div class="section-title">Recent Activity</div><div id="dash-activity"></div></div>
+</div>
+
+<!-- PAGE: CLIENT HUB -->
+<div class="page" id="page-clients">
+  <div class="page-header">
+    <div><div class="page-title">Clients</div><div class="page-sub">All projects · live status</div></div>
+    <button class="btn btn-gold btn-sm" onclick="openModal('modal-new-client')">+ Add</button>
+  </div>
+  <div class="grid-3 mb-16">
+    <div class="card-sm"><div class="stat-val" id="stat-total">4</div><div class="stat-lbl">Projects</div></div>
+    <div class="card-sm"><div class="stat-val" id="stat-review">0</div><div class="stat-lbl">In Review</div></div>
+    <div class="card-sm"><div class="stat-val" id="stat-delivered">0</div><div class="stat-lbl">Delivered</div></div>
+  </div>
+  <div class="card"><div class="section-title">Active Clients</div><div id="client-list"></div></div>
+</div>
+
+<!-- PAGE: INVOICES -->
+<div class="page" id="page-invoices">
+  <div class="page-header">
+    <div><div class="page-title">Invoices</div><div class="page-sub">Track · export · remind</div></div>
+    <button class="btn btn-gold btn-sm" onclick="openModal('modal-new-invoice')">+ New</button>
+  </div>
+  <div class="grid-3 mb-16">
+    <div class="card-sm"><div class="gold-label">Paid</div><div class="stat-val" id="stat-collected" style="font-size:18px;">₹0</div></div>
+    <div class="card-sm"><div class="gold-label">Due</div><div class="stat-val" id="stat-due" style="font-size:18px;color:var(--warn);">₹0</div></div>
+    <div class="card-sm"><div class="gold-label">Late</div><div class="stat-val" id="stat-late" style="font-size:18px;color:var(--danger);">₹0</div></div>
+  </div>
+  <div class="card"><div class="section-title">Invoice Log</div><div id="invoice-list"></div></div>
+</div>
+
+<!-- PAGE: SHOWCASE -->
+<div class="page" id="page-showcase">
+  <div class="page-header">
+    <div><div class="page-title">Showcase</div><div class="page-sub">Client portfolio & finished works</div></div>
+    <button class="btn btn-gold btn-sm" onclick="openModal('modal-new-showcase')">+ Upload</button>
+  </div>
+  <input class="inp mb-16" type="text" placeholder="Search by client or project..." id="showcase-search" oninput="renderShowcase()">
+  <div class="showcase-grid" id="showcase-list">
+    <!-- Showcase items injected here -->
+  </div>
+</div>
+
+<!-- PAGE: VAULT -->
+<div class="page" id="page-vault">
+  <div class="page-header">
+    <div><div class="page-title">Idea Vault</div><div class="page-sub">Creative brain — externalized</div></div>
+    <div class="flex gap-8">
+      <button class="btn btn-sm" onclick="randomIdea()">⚡</button>
+      <button class="btn btn-gold btn-sm" onclick="openModal('modal-new-idea')">+ Add</button>
+    </div>
+  </div>
+  <div class="random-box" id="random-box" onclick="randomIdea()">
+    <div class="random-hook" id="random-hook">"Tap to spark a random idea"</div>
+    <div class="random-tag" id="random-tag">TAP TO GENERATE</div>
+  </div>
+  <input class="inp mb-12" type="text" placeholder="Search ideas..." id="vault-search" oninput="filterVault()">
+  <div class="flex gap-8 mb-16" style="overflow-x:auto;padding-bottom:4px;" id="tag-filters">
+    <button class="toggle-btn active" onclick="filterByTag('all',this)" style="white-space:nowrap;">All</button>
+    <button class="toggle-btn" onclick="filterByTag('reel',this)" style="white-space:nowrap;">Reel</button>
+    <button class="toggle-btn" onclick="filterByTag('hook',this)" style="white-space:nowrap;">Hook</button>
+    <button class="toggle-btn" onclick="filterByTag('caption',this)" style="white-space:nowrap;">Caption</button>
+    <button class="toggle-btn" onclick="filterByTag('moody',this)" style="white-space:nowrap;">Moody</button>
+  </div>
+  <div id="vault-grid"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bnav-item active" onclick="switchTab('dashboard',this)"><div class="bnav-icon">📊</div><div class="bnav-label">Overview</div></button>
+  <button class="bnav-item" onclick="switchTab('clients',this)"><div class="bnav-icon">👤</div><div class="bnav-label">Clients</div></button>
+  <button class="bnav-item" onclick="switchTab('invoices',this)"><div class="bnav-icon">🧾</div><div class="bnav-label">Invoices</div></button>
+  <button class="bnav-item" onclick="switchTab('showcase',this)"><div class="bnav-icon">🖼️</div><div class="bnav-label">Showcase</div></button>
+  <button class="bnav-item" onclick="switchTab('vault',this)"><div class="bnav-icon">💡</div><div class="bnav-label">Vault</div></button>
+</div>
+
+<!-- MODALS -->
+<!-- New Client -->
+<div class="modal-overlay" id="modal-new-client">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('modal-new-client')">✕</button>
+    <div class="modal-title">New Client</div>
+    <div class="form-group"><div class="inp-label">Client Name</div><input class="inp" id="nc-name" placeholder="e.g. Zara's Cafe"></div>
+    <div class="form-group"><div class="inp-label">Project Type</div>
+      <input class="inp" id="nc-type" list="project-types" placeholder="e.g. Website Design">
+      <datalist id="project-types">
+        <option value="Logo Design"></option>
+        <option value="Brand Identity"></option>
+        <option value="Social Media Kit"></option>
+        <option value="Reel Editing"></option>
+        <option value="Full Branding"></option>
+      </datalist>
+    </div>
+    <div class="form-group"><div class="inp-label">Budget (₹)</div><input class="inp" id="nc-budget" type="number" placeholder="5000"></div>
+    <div class="form-group"><div class="inp-label">Starting Stage</div>
+      <select class="inp" id="nc-stage"><option value="0">Briefing</option><option value="1">Concept</option><option value="2">Design</option><option value="3">Review</option><option value="4">Delivery</option></select>
+    </div>
+    <div class="form-group"><div class="inp-label">Date Added</div><input type="date" class="inp" id="nc-date"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-new-client')">Cancel</button>
+      <button class="btn btn-gold" onclick="addClient()">Add Client</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Invoice — clients auto-populate -->
+<div class="modal-overlay" id="modal-new-invoice">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('modal-new-invoice')">✕</button>
+    <div class="modal-title">New Invoice</div>
+    <div class="form-group"><div class="inp-label">Client</div>
+      <select class="inp" id="ni-client-sel" onchange="autoFillInvoice()"><option value="">Select client...</option></select>
+    </div>
+    <div class="form-group"><div class="inp-label">Service Description</div><input class="inp" id="ni-service" placeholder="e.g. Logo Design + Brand Kit"></div>
+    <div class="form-group"><div class="inp-label">Amount (₹)</div><input class="inp" id="ni-amount" type="number" placeholder="8000"></div>
+    <div class="form-group"><div class="inp-label">Status</div>
+      <select class="inp" id="ni-status"><option value="pending">Pending</option><option value="paid">Paid</option><option value="overdue">Overdue</option></select>
+    </div>
+    <div class="form-group mt-12 mb-12">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text);">
+        <input type="checkbox" id="ni-gst" checked> Include GST (18%)
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-new-invoice')">Cancel</button>
+      <button class="btn btn-gold" onclick="addInvoice()">Generate Invoice</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Idea -->
+<div class="modal-overlay" id="modal-new-idea">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('modal-new-idea')">✕</button>
+    <div class="modal-title">New Idea</div>
+    <div class="form-group"><div class="inp-label">Hook / Idea</div><textarea class="inp" id="idea-text" placeholder="e.g. POV: You hired a designer who actually gets branding..."></textarea></div>
+    <div class="form-group"><div class="inp-label">Type</div>
+      <input class="inp" id="idea-type" list="idea-types" placeholder="e.g. reel">
+      <datalist id="idea-types"><option value="reel"></option><option value="hook"></option><option value="caption"></option><option value="concept"></option></datalist>
+    </div>
+    <div class="form-group"><div class="inp-label">Mood</div>
+      <input class="inp" id="idea-mood" list="idea-moods" placeholder="e.g. moody">
+      <datalist id="idea-moods"><option value="moody"></option><option value="informative"></option><option value="funny"></option><option value="aesthetic"></option><option value="bold"></option></datalist>
+    </div>
+    <div class="form-group"><div class="inp-label">Account</div>
+      <input class="inp" id="idea-account" list="idea-accounts" placeholder="e.g. @unfilteredomar_">
+      <datalist id="idea-accounts"><option value="@unfilteredomar_"></option><option value="@_ashmilee"></option><option value="@_ashmileeey"></option><option value="@morastudioco"></option></datalist>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-new-idea')">Cancel</button>
+      <button class="btn btn-gold" onclick="addIdea()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Idea Detail & AI -->
+<div class="modal-overlay" id="modal-idea-detail">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('modal-idea-detail')">✕</button>
+    <div class="modal-title" id="id-title" style="margin-bottom:8px;font-size:16px;"></div>
+    <div class="tag-row mb-12" id="id-tags"></div>
+    <div class="form-group mb-16">
+      <textarea class="inp" id="id-script" placeholder="Draft your script, caption, or outline here..." style="min-height:180px;font-family:'Inter',sans-serif;line-height:1.5;"></textarea>
+    </div>
+    <div class="flex gap-8">
+      <button class="btn btn-gold w-full" id="btn-ai-enhance" onclick="generateAIScript()">✨ AI Enhance</button>
+      <button class="btn w-full" onclick="saveIdeaScript()">Save Script</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Showcase -->
+<div class="modal-overlay" id="modal-new-showcase">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('modal-new-showcase')">✕</button>
+    <div class="modal-title">Add to Showcase</div>
+    <div class="form-group"><div class="inp-label">Client</div>
+      <select class="inp" id="sc-client-sel"><option value="">Select client...</option></select>
+    </div>
+    <div class="form-group"><div class="inp-label">Project / Title</div><input class="inp" id="sc-title" placeholder="e.g. Final Logo Package"></div>
+    <div class="form-group"><div class="inp-label">Date</div><input type="date" class="inp" id="sc-date"></div>
+    <div class="form-group mb-16"><div class="inp-label">Image</div>
+      <input type="file" id="sc-image" accept="image/*" class="inp" style="padding:8px;background:var(--surface3);">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-new-showcase')">Cancel</button>
+      <button class="btn btn-gold" onclick="addShowcaseWork()">Upload Work</button>
+    </div>
+  </div>
+</div>
+
+<!-- Client Detail -->
+<div class="modal-overlay" id="modal-client-detail">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('modal-client-detail')">✕</button>
+    <div class="modal-title" id="cd-title"></div>
+    <div class="gold-label mb-12" id="cd-project"></div>
+    <div class="stage-row mb-8" id="cd-stages"></div>
+    <div class="prog-bar mb-16"><div class="prog-fill" id="cd-prog" style="width:0%"></div></div>
+    <div class="grid-2 mb-16">
+      <div class="card-sm" style="text-align:center;"><div class="gold-label">Budget</div><div class="stat-val" id="cd-budget" style="font-size:20px;"></div></div>
+      <div class="card-sm" style="text-align:center;"><div class="gold-label">Stage</div><div style="font-size:14px;color:var(--gold);margin-top:6px;font-weight:400;" id="cd-stage-name"></div></div>
+    </div>
+    <div class="flex gap-8">
+      <button class="btn" style="padding:8px 12px;flex-shrink:0;" onclick="previousStage()" title="Previous Stage">←</button>
+      <button class="btn w-full" onclick="advanceStage()">Next Stage →</button>
+      <button class="btn btn-gold w-full" onclick="createInvoiceFor()">Invoice</button>
+    </div>
+  </div>
+</div>
+
+<!-- Invoice Detail + PDF -->
+<div class="modal-overlay" id="modal-invoice-detail">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('modal-invoice-detail')">✕</button>
+    <div class="modal-title">Invoice</div>
+    <div id="invoice-detail-content"></div>
+    <div class="modal-actions" id="invoice-detail-actions"></div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script>
+const STAGES=['Briefing','Concept','Design','Review','Delivery'];
+let clients=[
+  {id:1,name:'Rohan Mathew',project:'Brand Identity',budget:12000,stage:3,initials:'RM'},
+  {id:2,name:'Priya Nair',project:'Social Media Kit',budget:6000,stage:4,initials:'PN'},
+  {id:3,name:'TechHive Studio',project:'Logo Design',budget:5000,stage:2,initials:'TH'},
+  {id:4,name:"Zara's Cafe",project:'Full Branding',budget:18000,stage:1,initials:'ZC'},
+];
+let invoices=[
+  {id:'MR-001',client:'Rohan Mathew',service:'Brand Identity — Full Package',amount:12000,status:'paid',date:'Apr 10, 2026',gst:true},
+  {id:'MR-002',client:'TechHive Studio',service:'Logo Design',amount:5000,status:'pending',date:'Apr 18, 2026',gst:true},
+  {id:'MR-003',client:"Zara's Cafe",service:'Full Branding Deposit (50%)',amount:9000,status:'overdue',date:'Apr 5, 2026',gst:true},
+  {id:'MR-004',client:'Priya Nair',service:'Social Media Kit',amount:6000,status:'paid',date:'Apr 22, 2026',gst:true},
+];
+let ideas=[
+  {id:1,text:"POV: You hired a designer who actually reads before designing",type:'reel',mood:'moody',account:'@unfilteredomar_',date:'Apr 23',script:''},
+  {id:2,text:"Your logo is not your brand. Your logo is just the face of your brand.",type:'hook',mood:'bold',account:'@unfilteredomar_',date:'Apr 20',script:''},
+  {id:3,text:"3 free tools I use every day as a graphic designer (that nobody talks about)",type:'reel',mood:'informative',account:'@unfilteredomar_',date:'Apr 18',script:''},
+  {id:4,text:"Day in my life as a designer in Kerala — the unfiltered version",type:'reel',mood:'aesthetic',account:'@_ashmilee',date:'Apr 15',script:''},
+  {id:5,text:"We don't make pretty pictures. We build identities.",type:'caption',mood:'moody',account:'@morastudioco',date:'Apr 12',script:''},
+  {id:6,text:"Stop asking AI to design for you and start asking it to help you design better",type:'hook',mood:'bold',account:'@unfilteredomar_',date:'Apr 10',script:''},
+];
+
+let showcaseWorks=[];
+let activeFilter='all';
+let currentClientId=null;
+
+function switchTab(tab,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+
+function openModal(id){
+  document.getElementById(id).classList.add('open');
+  if(id==='modal-new-invoice'||id==='modal-new-showcase')populateClientDropdowns();
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+function notify(msg){const n=document.getElementById('notif');n.textContent=msg;n.classList.add('show');setTimeout(()=>n.classList.remove('show'),2500);}
+
+function getInitials(n){return n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
+
+function populateClientDropdowns(){
+  const selectors=['ni-client-sel','sc-client-sel'];
+  selectors.forEach(sid=>{
+    const sel=document.getElementById(sid);
+    if(!sel)return;
+    const cur=sel.value;
+    sel.innerHTML='<option value="">Select client...</option>';
+    clients.forEach(c=>{sel.innerHTML+=`<option value="${c.id}">${c.name} — ${c.project}</option>`;});
+    if(cur)sel.value=cur;
+  });
+}
+
+function autoFillInvoice(){
+  const sid=document.getElementById('ni-client-sel').value;
+  if(!sid)return;
+  const c=clients.find(x=>x.id==sid);
+  if(!c)return;
+  document.getElementById('ni-service').value=c.project;
+  document.getElementById('ni-amount').value=c.budget;
+  notify('Auto-filled from '+c.name);
+}
+
+function renderClients(){
+  const list=document.getElementById('client-list');
+  list.innerHTML='';
+  clients.forEach(c=>{
+    const pct=Math.round((c.stage/(STAGES.length-1))*100);
+    list.innerHTML+=`<div class="client-row" onclick="openClientDetail(${c.id})">
+      <div class="avatar">${c.initials}</div>
+      <div style="flex:1;">
+        <div class="client-name">${c.name}</div>
+        <div class="client-project">${c.project} <span style="opacity:0.5;margin-left:4px;">${c.date?`· `+c.date:''}</span></div>
+        <div class="prog-bar mt-8"><div class="prog-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div style="text-align:right;min-width:70px;">
+        <div style="font-size:10px;color:var(--gold);margin-bottom:3px;">${STAGES[c.stage]}</div>
+        <div style="font-size:10px;color:var(--muted);">${pct}%</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('stat-total').textContent=clients.length;
+  document.getElementById('stat-review').textContent=clients.filter(c=>c.stage===3).length;
+  document.getElementById('stat-delivered').textContent=clients.filter(c=>c.stage===4).length;
+  populateClientDropdowns();
+}
+
+function openClientDetail(id){
+  const c=clients.find(x=>x.id===id);
+  currentClientId=id;
+  document.getElementById('cd-title').textContent=c.name;
+  document.getElementById('cd-project').textContent=c.project;
+  document.getElementById('cd-budget').textContent='₹'+c.budget.toLocaleString('en-IN');
+  document.getElementById('cd-stage-name').textContent=STAGES[c.stage];
+  const pct=Math.round((c.stage/(STAGES.length-1))*100);
+  document.getElementById('cd-prog').style.width=pct+'%';
+  const sr=document.getElementById('cd-stages');
+  sr.innerHTML='';
+  STAGES.forEach((s,i)=>{
+    const cls=i<c.stage?'done':i===c.stage?'current':'';
+    sr.innerHTML+=`<div class="stage-item ${cls}"><div class="stage-circle">${i<c.stage?'✓':i+1}</div><div class="stage-lbl">${s}</div></div>`;
+  });
+  openModal('modal-client-detail');
+}
+
+function advanceStage(){
+  const c=clients.find(x=>x.id===currentClientId);
+  if(c.stage<STAGES.length-1){c.stage++;renderClients();renderDashboard();openClientDetail(currentClientId);notify('→ '+STAGES[c.stage]);}
+  else notify('Already at final stage');
+}
+
+function previousStage(){
+  const c=clients.find(x=>x.id===currentClientId);
+  if(c.stage>0){c.stage--;renderClients();renderDashboard();openClientDetail(currentClientId);notify('← '+STAGES[c.stage]);}
+  else notify('Already at first stage');
+}
+
+function createInvoiceFor(){
+  const c=clients.find(x=>x.id===currentClientId);
+  closeModal('modal-client-detail');
+  openModal('modal-new-invoice');
+  setTimeout(()=>{
+    populateClientDropdowns();
+    document.getElementById('ni-client-sel').value=c.id;
+    autoFillInvoice();
+  },50);
+}
+
+function addClient(){
+  const name=document.getElementById('nc-name').value.trim();
+  const dval=document.getElementById('nc-date').value;
+  if(!name){notify('Enter a client name');return;}
+  const dateStr=dval?new Date(dval).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  clients.push({id:Date.now(),name,project:document.getElementById('nc-type').value,budget:parseInt(document.getElementById('nc-budget').value)||0,stage:parseInt(document.getElementById('nc-stage').value),initials:getInitials(name),date:dateStr});
+  renderClients();
+  renderDashboard();
+  closeModal('modal-new-client');
+  document.getElementById('nc-name').value='';
+  document.getElementById('nc-budget').value='';
+  document.getElementById('nc-date').value='';
+  notify('Client added — '+name);
+}
+
+function renderInvoices(){
+  const list=document.getElementById('invoice-list');
+  list.innerHTML='';
+  let paid=0,due=0,late=0;
+  invoices.forEach(inv=>{
+    if(inv.status==='paid')paid+=inv.amount;
+    else if(inv.status==='pending')due+=inv.amount;
+    else late+=inv.amount;
+    const bmap={paid:'badge-paid',pending:'badge-pending',overdue:'badge-overdue'};
+    list.innerHTML+=`<div class="invoice-row" onclick="openInvoiceDetail('${inv.id}')">
+      <div>
+        <div class="inv-id">${inv.id}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${inv.date}</div>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:400;">${inv.client}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${inv.service}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+        <div class="inv-amt">₹${inv.amount.toLocaleString('en-IN')}</div>
+        <span class="badge ${bmap[inv.status]}"><span class="dot"></span>${inv.status}</span>
+      </div>
+    </div>`;
+  });
+  document.getElementById('stat-collected').textContent='₹'+paid.toLocaleString('en-IN');
+  document.getElementById('stat-due').textContent='₹'+due.toLocaleString('en-IN');
+  document.getElementById('stat-late').textContent='₹'+late.toLocaleString('en-IN');
+}
+
+function openInvoiceDetail(id){
+  const inv=invoices.find(x=>x.id===id);
+  const bmap={paid:'badge-paid',pending:'badge-pending',overdue:'badge-overdue'};
+  const subtotal=inv.amount;
+  const gst=inv.gst ? Math.round(subtotal*0.18) : 0;
+  const total=subtotal+gst;
+  document.getElementById('invoice-detail-content').innerHTML=`
+    <div style="border:0.5px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px;">
+      <div class="flex justify-between items-center mb-12">
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--gold);">mora studio</div>
+          <div style="font-size:10px;color:var(--muted);letter-spacing:0.06em;">@morastudioco · Kerala, India</div>
+        </div>
+        <span class="badge ${bmap[inv.status]}"><span class="dot"></span>${inv.status}</span>
+      </div>
+      <div class="divider"></div>
+      <div class="grid-2 mb-12" style="gap:10px;">
+        <div><div class="inp-label">Invoice No.</div><div style="font-size:13px;font-weight:400;margin-top:3px;">${inv.id}</div></div>
+        <div><div class="inp-label">Date</div><div style="font-size:13px;font-weight:400;margin-top:3px;">${inv.date}</div></div>
+        <div><div class="inp-label">Client</div><div style="font-size:13px;font-weight:400;margin-top:3px;">${inv.client}</div></div>
+        <div><div class="inp-label">Due Date</div><div style="font-size:13px;font-weight:400;margin-top:3px;">7 days</div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="mb-12">
+        <div class="inp-label mb-8">Services</div>
+        <div class="flex justify-between" style="font-size:13px;padding:8px 0;">
+          <span>${inv.service}</span>
+          <span style="color:var(--gold);">₹${subtotal.toLocaleString('en-IN')}</span>
+        </div>
+        ${inv.gst ? `<div class="flex justify-between" style="font-size:11px;color:var(--muted);padding:4px 0;">
+          <span>GST (18%)</span>
+          <span>₹${gst.toLocaleString('en-IN')}</span>
+        </div>` : ''}
+      </div>
+      <div class="divider"></div>
+      <div class="flex justify-between items-center">
+        <div style="font-size:12px;color:var(--muted);letter-spacing:0.05em;">TOTAL</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--gold);">₹${total.toLocaleString('en-IN')}</div>
+      </div>
+    </div>`;
+  const actions=document.getElementById('invoice-detail-actions');
+  actions.innerHTML='';
+  if(inv.status!=='paid'){
+    const markBtn=document.createElement('button');
+    markBtn.className='btn btn-success btn-sm';
+    markBtn.textContent='Mark Paid';
+    markBtn.onclick=()=>{inv.status='paid';renderInvoices();renderDashboard();closeModal('modal-invoice-detail');notify('Marked as paid ✓');};
+    actions.appendChild(markBtn);
+    if(inv.status==='overdue'){
+      const remBtn=document.createElement('button');
+      remBtn.className='btn btn-sm';
+      remBtn.textContent='Send Reminder';
+      remBtn.onclick=()=>{notify('Reminder sent to '+inv.client+' →');};
+      actions.appendChild(remBtn);
+    }
+  }
+  const pdfBtn=document.createElement('button');
+  pdfBtn.className='btn btn-gold btn-sm';
+  pdfBtn.textContent='Export PDF';
+  pdfBtn.onclick=()=>exportInvoicePDF(inv);
+  actions.appendChild(pdfBtn);
+  openModal('modal-invoice-detail');
+}
+
+function exportInvoicePDF(inv){
+  const subtotal=inv.amount;
+  const gst=inv.gst ? Math.round(subtotal*0.18) : 0;
+  const total=subtotal+gst;
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Inter:wght@300;400;500&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Inter',sans-serif;font-weight:300;background:#fff;color:#1a1a17;padding:48px;font-size:13px;line-height:1.6;}
+    .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:40px;}
+    .logo{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;letter-spacing:0.1em;color:#2a2a27;}
+    .logo-sub{font-size:11px;color:#888;letter-spacing:0.08em;font-family:'Inter',sans-serif;margin-top:2px;}
+    .inv-badge{padding:5px 14px;border-radius:99px;font-size:11px;letter-spacing:0.08em;font-weight:400;text-transform:uppercase;}
+    .paid{background:#e8f5ec;color:#2d7a47;border:1px solid #c3e6cc;}
+    .pending{background:#fef5e8;color:#9a5c1a;border:1px solid #f5d9a8;}
+    .overdue{background:#fde8e8;color:#8b2020;border:1px solid #f5b8b8;}
+    .section{margin-bottom:28px;}
+    .section-title{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#888;margin-bottom:12px;padding-bottom:8px;border-bottom:0.5px solid #e0ddd6;}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+    .field-label{font-size:10px;color:#888;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:3px;}
+    .field-val{font-size:13px;color:#1a1a17;font-weight:400;}
+    table{width:100%;border-collapse:collapse;}
+    th{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#888;padding:10px 0;border-bottom:0.5px solid #e0ddd6;font-weight:400;text-align:left;}
+    td{padding:12px 0;border-bottom:0.5px solid #f0ede6;font-size:13px;}
+    .total-row{font-family:'Cormorant Garamond',serif;font-size:22px;color:#2a2a27;font-weight:300;}
+    .footer{margin-top:48px;padding-top:16px;border-top:0.5px solid #e0ddd6;font-size:11px;color:#aaa;display:flex;justify-content:space-between;}
+    .acct-box{background:#f8f7f4;border-radius:10px;padding:16px;margin-top:28px;}
+    .acct-title{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#888;margin-bottom:10px;}
+    .acct-item{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;}
+    .acct-label{color:#888;}
+    .acct-val{font-weight:400;color:#1a1a17;}
+    @media print{body{padding:0;margin:0;}@page{margin:48px;size:A4;}}
+  </style>
+  </${'head'}><${'body'}>
+  <div class="header">
+    <div><div class="logo">mora studio</div><div class="logo-sub">Built to be noticed · Kerala, India</div><div style="font-size:11px;color:#aaa;margin-top:4px;">@morastudioco</div></div>
+    <span class="inv-badge ${inv.status}">${inv.status}</span>
+  </div>
+  <div class="section">
+    <div class="section-title">Invoice Details</div>
+    <div class="grid-2">
+      <div><div class="field-label">Invoice No.</div><div class="field-val">${inv.id}</div></div>
+      <div><div class="field-label">Date</div><div class="field-val">${inv.date}</div></div>
+      <div><div class="field-label">Bill To</div><div class="field-val">${inv.client}</div></div>
+      <div><div class="field-label">Payment Due</div><div class="field-val">Within 7 days</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">Services</div>
+    <table>
+      <thead><tr><th>Description</th><th style="text-align:right;">Amount</th></tr></thead>
+      <tbody>
+        <tr><td>${inv.service}</td><td style="text-align:right;">Rs. ${subtotal.toLocaleString('en-IN')}</td></tr>
+        ${inv.gst ? `<tr><td style="color:#888;">GST (18%)</td><td style="text-align:right;color:#888;">Rs. ${gst.toLocaleString('en-IN')}</td></tr>` : ''}
+        <tr>
+          <td style="padding-top:16px;"><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#888;">Total Due</span></td>
+          <td style="text-align:right;padding-top:16px;"><span class="total-row">Rs. ${total.toLocaleString('en-IN')}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="acct-box">
+    <div class="acct-title">Payment Details</div>
+    <div class="acct-item"><span class="acct-label">Bank</span><span class="acct-val">HDFC Bank</span></div>
+    <div class="acct-item"><span class="acct-label">Account Name</span><span class="acct-val">Mora Studio / Ashmil Omar</span></div>
+    <div class="acct-item"><span class="acct-label">UPI</span><span class="acct-val">morastudio@upi</span></div>
+  </div>
+  <div class="footer">
+    <span>Thank you for working with Mora Studio.</span>
+    <span>${inv.id} · morastudioco</span>
+  </div>
+  <script>window.onload=()=>{window.print();}<\/script>
+  </${'body'}></${'html'}>`;
+  const win=window.open('','_blank','width=800,height=900');
+  win.document.write(html);
+  win.document.close();
+  notify('PDF opening — print to save');
+}
+
+function addInvoice(){
+  const sid=document.getElementById('ni-client-sel').value;
+  const service=document.getElementById('ni-service').value.trim();
+  const amount=parseInt(document.getElementById('ni-amount').value)||0;
+  if(!sid||!service){notify('Fill all fields');return;}
+  const c=clients.find(x=>x.id==sid);
+  const n=invoices.length+1;
+  const addGst=document.getElementById('ni-gst').checked;
+  invoices.push({id:`MR-00${n}`,client:c.name,service,amount,status:document.getElementById('ni-status').value,date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}),gst:addGst});
+  renderInvoices();
+  renderDashboard();
+  closeModal('modal-new-invoice');
+  notify('Invoice generated — MR-00'+n);
+}
+
+function renderShowcase(){
+  const list=document.getElementById('showcase-list');
+  const search=document.getElementById('showcase-search').value.toLowerCase();
+  const filtered=showcaseWorks.filter(w=>w.title.toLowerCase().includes(search)||w.client.toLowerCase().includes(search));
+  
+  if(!filtered.length){
+    list.innerHTML='<div style="grid-column:1/-1;" class="empty-state">No works found. Upload your first masterpiece!</div>';
+    return;
+  }
+  
+  list.innerHTML=filtered.map(w=>`<div class="sc-card">
+    <div class="sc-img-box"><img src="${w.img}"></div>
+    <div class="sc-info">
+      <div class="flex justify-between items-center mb-4">
+        <div class="sc-title" style="margin:0;">${w.title}</div>
+        <div style="font-size:9px;color:var(--muted);">${w.date||''}</div>
+      </div>
+      <div class="sc-client">${w.client}</div>
+    </div>
+  </div>`).join('');
+}
+
+function addShowcaseWork(){
+  const sid=document.getElementById('sc-client-sel').value;
+  const title=document.getElementById('sc-title').value.trim();
+  const fileInput=document.getElementById('sc-image');
+  const dval=document.getElementById('sc-date').value;
+  
+  if(!sid||!title||!fileInput.files[0]){notify('Fill all fields and select image');return;}
+  
+  const dateStr=dval?new Date(dval).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'Recent';
+  const c=clients.find(x=>x.id==sid);
+  const reader=new FileReader();
+  reader.onload=e=>{
+    showcaseWorks.unshift({id:Date.now(),client:c.name,title,img:e.target.result,date:dateStr});
+    renderShowcase();
+    closeModal('modal-new-showcase');
+    document.getElementById('sc-title').value='';
+    document.getElementById('sc-date').value='';
+    fileInput.value='';
+    notify('Added to Showcase 🖼️');
+  };
+  reader.readAsDataURL(fileInput.files[0]);
+}
+
+function renderDashboard(){
+  const now=new Date();
+  const month=now.toLocaleString('default',{month:'long',year:'numeric'});
+  document.getElementById('dash-month').textContent=month;
+  
+  let rev=0;
+  invoices.forEach(inv=>{
+    if(inv.status==='paid'){
+      const d=new Date(inv.date);
+      if(d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()){
+        rev+=inv.amount;
+      }
+    }
+  });
+  document.getElementById('dash-rev').textContent='₹'+rev.toLocaleString('en-IN');
+  
+  const active=clients.filter(c=>c.stage<4).length;
+  const delivered=clients.filter(c=>c.stage===4).length;
+  document.getElementById('dash-active').textContent=active;
+  document.getElementById('dash-delivered').textContent=delivered;
+  
+  const actList=document.getElementById('dash-activity');
+  const acts=[];
+  invoices.slice(-3).reverse().forEach(i=>acts.push(`<div class="acct-item" style="padding:10px 0;border-bottom:0.5px solid var(--border);"><span class="acct-label" style="font-size:11px;">Invoice ${i.id} <span style="color:${i.status==='paid'?'var(--success)':'var(--gold)'}">(${i.status})</span></span><span class="acct-val" style="font-size:12px;">${i.client}</span></div>`));
+  clients.slice(-2).reverse().forEach(c=>acts.push(`<div class="acct-item" style="padding:10px 0;border-bottom:0.5px solid var(--border);"><span class="acct-label" style="font-size:11px;">New Client <span style="color:var(--muted)">(${STAGES[c.stage]})</span></span><span class="acct-val" style="font-size:12px;">${c.name}</span></div>`));
+  actList.innerHTML=acts.slice(0,5).join('');
+}
+
+function renderVault(filter){
+  const search=document.getElementById('vault-search').value.toLowerCase();
+  const grid=document.getElementById('vault-grid');
+  const tc={reel:'tag-gold',hook:'tag-blue',caption:'tag-pink',concept:'tag-dark',moody:'tag-dark',informative:'tag-blue',funny:'tag-pink',aesthetic:'tag-gold',bold:'tag-gold'};
+  const filtered=ideas.filter(i=>{
+    const mt=filter==='all'||i.type===filter||i.mood===filter;
+    const ms=!search||i.text.toLowerCase().includes(search)||i.account.includes(search);
+    return mt&&ms;
+  });
+  if(!filtered.length){grid.innerHTML='<div style="text-align:center;color:var(--muted);padding:40px;font-size:13px;">No ideas yet. Add one!</div>';return;}
+  grid.innerHTML=filtered.map(i=>`<div class="idea-card" onclick="openIdeaDetail(${i.id})">
+    <div class="idea-hook">${i.text}</div>
+    <div class="tag-row">
+      <span class="tag ${tc[i.type]||'tag-dark'}">${i.type}</span>
+      <span class="tag ${tc[i.mood]||'tag-dark'}">${i.mood}</span>
+      <span class="tag tag-dark">${i.account}</span>
+    </div>
+    <div class="idea-meta">${i.date}</div>
+  </div>`).join('');
+}
+
+function filterByTag(tag,btn){
+  activeFilter=tag;
+  document.querySelectorAll('#tag-filters .toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderVault(tag);
+}
+
+function filterVault(){renderVault(activeFilter);}
+
+function randomIdea(){
+  const idea=ideas[Math.floor(Math.random()*ideas.length)];
+  document.getElementById('random-hook').textContent=`"${idea.text}"`;
+  document.getElementById('random-tag').textContent=idea.type.toUpperCase()+' · '+idea.mood+' · '+idea.account;
+}
+
+let currentIdeaId=null;
+
+function openIdeaDetail(id){
+  const idea=ideas.find(x=>x.id===id);
+  currentIdeaId=id;
+  document.getElementById('id-title').textContent=idea.text;
+  const tc={reel:'tag-gold',hook:'tag-blue',caption:'tag-pink',concept:'tag-dark',moody:'tag-dark',informative:'tag-blue',funny:'tag-pink',aesthetic:'tag-gold',bold:'tag-gold'};
+  document.getElementById('id-tags').innerHTML=`
+    <span class="tag ${tc[idea.type]||'tag-dark'}">${idea.type}</span>
+    <span class="tag ${tc[idea.mood]||'tag-dark'}">${idea.mood}</span>
+    <span class="tag tag-dark">${idea.account}</span>
+  `;
+  document.getElementById('id-script').value=idea.script||'';
+  openModal('modal-idea-detail');
+}
+
+function saveIdeaScript(){
+  const idea=ideas.find(x=>x.id===currentIdeaId);
+  idea.script=document.getElementById('id-script').value;
+  closeModal('modal-idea-detail');
+  notify('Script saved');
+}
+
+function generateAIScript(){
+  const btn=document.getElementById('btn-ai-enhance');
+  const txt=document.getElementById('id-script');
+  const idea=ideas.find(x=>x.id===currentIdeaId);
+  
+  btn.textContent='Generating...';
+  btn.disabled=true;
+  
+  setTimeout(()=>{
+    const dummyScript=`[HOOK]\n${idea.text}\n\n[BODY]\nWe often focus on the wrong things. When approaching this topic from a ${idea.mood} perspective, it's crucial to remember the core message.\n\nHere are 3 key takeaways:\n1. The foundation is everything.\n2. Stop overcomplicating the process.\n3. Keep it authentic to ${idea.account}.\n\n[CALL TO ACTION]\nDrop a 🔥 if you agree, and save this post for your next project!`;
+    
+    txt.value='';
+    let i=0;
+    const typeWriter=setInterval(()=>{
+      txt.value+=dummyScript.charAt(i);
+      i++;
+      if(i>=dummyScript.length){
+        clearInterval(typeWriter);
+        btn.textContent='✨ AI Enhance';
+        btn.disabled=false;
+        notify('AI Script Generated!');
+      }
+    }, 15);
+  }, 800);
+}
+
+function addIdea(){
+  const text=document.getElementById('idea-text').value.trim();
+  if(!text){notify('Write your idea first');return;}
+  ideas.unshift({id:Date.now(),text,type:document.getElementById('idea-type').value,mood:document.getElementById('idea-mood').value,account:document.getElementById('idea-account').value,date:'Just now',script:''});
+  renderVault(activeFilter);
+  closeModal('modal-new-idea');
+  document.getElementById('idea-text').value='';
+  notify('Saved to vault');
+}
+
+renderClients();renderInvoices();renderShowcase();renderVault('all');randomIdea();
+renderDashboard();
+populateClientDropdowns();
+</script>
+</body>
+</html>
